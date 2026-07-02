@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 int main(int argc, char *argv[]) 
 {
@@ -28,6 +30,18 @@ int main(int argc, char *argv[])
         }
 
         *(my_argv + my_argv_assigner) = NULL;
+
+        int pid = fork();
+
+        if (pid == 0) { // basically if its the child class run this
+            execvp(my_argv[0], my_argv);
+        }
+        else {
+            wait(NULL); // parent waits for the child
+        }
+
+
+
     }
     return 0;
 }
