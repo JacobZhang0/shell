@@ -31,6 +31,17 @@ int main(int argc, char *argv[])
 
         *(my_argv + my_argv_assigner) = NULL;
 
+        if (strcmp(*my_argv, "exit") == 0)
+            break;
+        else if (strcmp(*my_argv, "cd") == 0) {
+            if (*(my_argv + 1) == NULL) { // if only cd is typed return to user home
+                chdir(getenv("HOME"));
+                continue;
+            }
+            chdir(*(my_argv + 1));
+            continue;
+        }
+
         int pid = fork();
 
         if (pid == 0) { // basically if its the child class run this
