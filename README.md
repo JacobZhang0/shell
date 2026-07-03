@@ -2,7 +2,7 @@
 
 A small C program that builds shell-style command arguments from user input. Written on macOS using Clang and LLDB.
 
-This project currently implements command parsing and basic command execution.
+This project currently implements command parsing, basic command execution, signal handling, and core built-ins.
 
 ## What it does right now
 - Reads input using `fgets()` 
@@ -10,6 +10,7 @@ This project currently implements command parsing and basic command execution.
 - Tokenizes the command line using `strtok()`
 - Constructs an argv-style array `char *my_argv[]`
 - Executes commands by spawning child processes with `fork()` and `execvp()`
+- Supports built-in commands (`cd` and `exit`)
 
 ### Example
 **Input:** `ls -l /tmp`
@@ -29,7 +30,7 @@ clang -Wall -Wextra -g sh.c -o sh
 
 ## Next Steps
 - [x] Process execution with `fork()` and `execvp()`
+- [x] Built-in commands (`cd`, `exit`)
 - [ ] Pipelines using `pipe()`
 - [ ] I/O redirection using `dup2()`
 - [ ] Signal handling (`SIGINT`)
-- [ ] Built-in commands (`cd`, `exit`)
