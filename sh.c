@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <fcntl.h>
 
 void handle_sigint(int);
 
@@ -14,7 +15,6 @@ int main(int argc, char *argv[])
     char *my_argv[64];
 
     struct sigaction act;
-    // update readme, empty input causes crash
 
     act.sa_flags = SA_RESTART; // once func is done running restart fgets
     act.sa_handler = handle_sigint; 
@@ -57,10 +57,32 @@ int main(int argc, char *argv[])
             continue;
         }
 
+        char *input_file = NULL;
+        char *output_file = NULL;
+
+        for (int i = 0; *(my_argv + i) != NULL; i++) {
+            if (strcmp(*(my_argv + i), "<") == 0) {
+                input_file = *(my_argv + i + 1);
+                *(my_argv + i) = NULL;
+            }
+            else if (strcmp(*(my_argv + i), ">") == 0) {
+                output_file = *(my_argv + i + 1); 
+                *(my_argv + i) = NULL; // override current index with NULL to stop execvp
+            }
+        }
+
         int pid = fork();
 
         if (pid == 0) { // basically if its the child class run this
-            execvp(my_argv[0], my_argv);
+            if (output_file != NULL) {
+                int fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644); // third arg is standard permission settings
+                dup2(fd,1); // 1 is monitor screen. copies channel 3 and forces it onto channel 1
+            }
+            if (input_file != NULL) {
+                int fd = open(input_file, O_RDONLY);
+                dup2(fd, 0);
+            }
+            execvp(*my_argv, my_argv); 
         }
         else {
             wait(NULL); // parent waits for the child
