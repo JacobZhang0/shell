@@ -3,12 +3,23 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <signal.h>
+
+void handle_sigint(int);
 
 int main(int argc, char *argv[]) 
 {
 
     char input_buffer[128];
     char *my_argv[64];
+
+    struct sigaction act;
+    // update readme, empty input causes crash
+
+    act.sa_flags = SA_RESTART; // once func is done running restart fgets
+    act.sa_handler = handle_sigint; 
+    sigemptyset(&act.sa_mask); // clear other signals while ctr-c is running
+    sigaction(SIGINT, &act, NULL);
 
     while (1) {
         printf("myshell>");
@@ -30,6 +41,10 @@ int main(int argc, char *argv[])
         }
 
         *(my_argv + my_argv_assigner) = NULL;
+
+        if (my_argv_assigner == 0) {
+            continue;
+        }
 
         if (strcmp(*my_argv, "exit") == 0)
             break;
@@ -55,4 +70,10 @@ int main(int argc, char *argv[])
 
     }
     return 0;
+}
+
+void handle_sigint(int sig)
+{
+    printf("\nmyshell>");
+    fflush(stdout);
 }

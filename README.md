@@ -11,6 +11,7 @@ This project currently implements command parsing, basic command execution, sign
 - Constructs an argv-style array `char *my_argv[]`
 - Executes commands by spawning child processes with `fork()` and `execvp()`
 - Supports built-in commands (`cd` and `exit`)
+- Implements a signal handler to handle control-c correctly
 
 ### Example
 **Input:** `ls -l /tmp`
@@ -33,4 +34,4 @@ clang -Wall -Wextra -g sh.c -o sh
 - [x] Built-in commands (`cd`, `exit`)
 - [ ] Pipelines using `pipe()`
 - [ ] I/O redirection using `dup2()`
-- [ ] Signal handling (`SIGINT`)
+- [x] Signal handling (`SIGINT`)
