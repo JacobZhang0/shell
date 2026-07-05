@@ -14,6 +14,8 @@ int main(int argc, char *argv[])
     char input_buffer[128];
     char *my_argv[64];
 
+    int pipefd[2];
+
     struct sigaction act;
 
     act.sa_flags = SA_RESTART; // once func is done running restart fgets
@@ -60,6 +62,8 @@ int main(int argc, char *argv[])
         char *input_file = NULL;
         char *output_file = NULL;
 
+        char **right_argv = NULL;
+
         for (int i = 0; *(my_argv + i) != NULL; i++) {
             if (strcmp(*(my_argv + i), "<") == 0) {
                 input_file = *(my_argv + i + 1);
@@ -69,11 +73,24 @@ int main(int argc, char *argv[])
                 output_file = *(my_argv + i + 1); 
                 *(my_argv + i) = NULL; // override current index with NULL to stop execvp
             }
+            if (strcmp(*(my_argv + i), "|") == 0) {
+                right_argv = (my_argv + i + 1);
+                *(my_argv + i) = NULL;
+            }
         }
 
-        int pid = fork();
+        if (right_argv != NULL) { // if pipe is found init tunnel
+            pipe(pipefd);
+        }
 
-        if (pid == 0) { // basically if its the child class run this
+        int pid1 = fork();
+
+        if (pid1 == 0) { // basically if its the child class run this
+            if (right_argv != NULL) {
+                dup2(pipefd[1], 1);
+                close(pipefd[0]);
+                close(pipefd[1]);
+            }
             if (output_file != NULL) {
                 int fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644); // third arg is standard permission settings
                 dup2(fd,1); // 1 is monitor screen. copies channel 3 and forces it onto channel 1
@@ -83,12 +100,29 @@ int main(int argc, char *argv[])
                 dup2(fd, 0);
             }
             execvp(*my_argv, my_argv); 
+            exit(1);
+        }
+
+        if (right_argv != NULL) {
+            int pid2 = fork();
+            if (pid2 == 0) {
+                dup2(pipefd[0], 0);
+                close(pipefd[0]);
+                close(pipefd[1]);
+
+                execvp(*right_argv, right_argv);
+                exit(1);
+            }
+        }
+        if (right_argv != NULL) {
+            close(pipefd[0]);
+            close(pipefd[1]);
+            wait(NULL); // wait for child A
+            wait(NULL); // wait for child B
         }
         else {
-            wait(NULL); // parent waits for the child
+            wait(NULL); // standard wait
         }
-
-
 
     }
     return 0;
