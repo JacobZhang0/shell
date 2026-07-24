@@ -1,5 +1,6 @@
 # Compiled binaries
 sh
+*.o
 
 # macOS debug symbols
 *.dSYM/
