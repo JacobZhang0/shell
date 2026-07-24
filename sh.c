@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
         if (pid1 == 0) { // basically if its the child class run this
             if (right_argv != NULL) {
                 dup2(pipefd[1], 1);
-                close(pipefd[0]);
+                close(pipefd[0]); // 0 is read channel 1 is write channel
                 close(pipefd[1]);
             }
             if (output_file != NULL) {
